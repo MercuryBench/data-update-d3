@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Test</title>
+        <script src="https://d3js.org/d3.v5.js"></script>
+    </head>
+    <body>
+        <button onClick=onClickBt() type="button">Click for new data</button>
+        <p>
+        <svg width="720" height="120" id="svg">
+        </svg></p>  
+        <script>
+                data1 = [{id: "A", val : 36},
+                        {id: "B", val: 64},
+                        {id: "C", val: 144}];
+                // Make scale: Data is plotted horizontally as circles (radius = sqrt(val)) at position depending on id         
+                var xscale = d3.scaleOrdinal()
+                    .domain("ABCDEF".split(""))
+                    .range([50,100,150,200,250,300])
+                    
+                // selects all (future) circles in svg
+                var circle = d3.select("body").select("svg").selectAll("circle");
+                
+                // join data (all data points will be "entering")
+                var circleUpdate = circle.data(data1, function(d,i){return d.id;});
+                
+                // select only entering data points (all of them)
+                var circleUpdate = circleUpdate.enter()
+                
+                // append new circle elements 
+                var circleUpdate = circleUpdate.append("circle")
+                        .attr("r", function(d) { return Math.sqrt(d.val); })
+                        .attr("cx", function(d, i) { return xscale(d.id); })
+                        .attr("cy", 50);
+                
+                // this is executed on clicking the button, i.e. the generation of new data
+                var onClickBt = function(){
+                    console.log("new data")
+                    // new data: value of A is unchanged, value of B is changed, C is removed, new data points E and F are inserted
+                    data2 =  [{id: "B", val : 16},
+                            {id: "A", val: 36},
+                            {id: "E", val: 121},
+                            {id: "F", val: 400}];
+                    
+                    // select all (partly future) circles in svg
+                    var circle = d3.select("body").select("svg").selectAll("circle");
+                    
+                    // join new data. A and B will be in "_groups[0]", C will be in "exit" and E, F will be in "enter"
+                    var circleUpdate = circle.data(data2, function(d,i){return d.id;});
+                    circleUpdate = circleUpdate
+                            .attr("r", function(d) { return Math.sqrt(d.val); })
+                            .attr("cx", function(d, i) { return xscale(d.id); })
+                            .attr("cy", 50)
+                    
+                    // paint red all elements in exit
+                    circleUpdate.exit().style("fill", "red")
+                    
+                    // append new (entering) elements and fill green
+                    circleUpdateEnter = circleUpdate.enter().append("circle")  
+                            .attr("r", function(d) { return Math.sqrt(d.val); })
+                            .attr("cx", function(d, i) { return xscale(d.id); })
+                            .attr("cy", 50)
+                            .style("fill", "green");
+                    // uncomment next line to actually remove DOM elements which are not needed anymore
+                    //circleUpdate.exit().remove()  
+                    
+                    // merge updated elements and entering elements. Update attributes, save in circle (now "new" selection of circles)
+                    circle = circleUpdateEnter.merge(circleUpdate)
+                    
+                    // note that (if line above commented out) now selection is updated fully, but one DOM element is still not removed
+                    console.log(circle)
+                    
+                }
+           </script>
+    </body>
+</html>
